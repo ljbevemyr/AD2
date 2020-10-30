@@ -34,6 +34,40 @@ import logging  # noqa
 
 __all__ = ['ring', 'ring_extended']
 
+class DisjointSet:
+
+    def __init__(self):
+        self.parent = {}
+        self.unions = {}
+
+    def makeSet(self, universe):
+        for i in universe:
+            self.parent[i] = i
+            self.unions[i] = []
+
+    def find(self, k):
+        if self.parent[k] == k:
+            return k
+
+        return self.find(self.parent[k])
+
+    def union(self, edge):
+        a_rep = self.find(edge[0])
+        b_rep = self.find(edge[1])
+
+        self.parent[a_rep] = b_rep
+        self.unions[b_rep] += self.unions[a_rep]
+        self.unions[b_rep].append(edge)
+        self.unions.pop(a_rep)
+    
+    def getUnion(self, k, all_nodes):
+        rep = self.find(k)
+        union = set()
+        for node in all_nodes:
+            if self.find(node) == rep:
+                union.add(node)
+        
+
 
 def ring(G: Graph) -> bool:
     """
@@ -45,6 +79,19 @@ def ring(G: Graph) -> bool:
           ring(g2) = True
     """
 
+    ds = DisjointSet()
+    nodes = G.nodes
+    edges = G.edges
+    
+    ds.makeSet(nodes)
+    
+    for edge in edges:
+        if ds.find(edge[0]) == ds.find(edge[1]):
+            return True
+        else:
+            ds.union(edge)
+
+    return False
 
 def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     """
@@ -57,7 +104,22 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
                                      ('f','h'),('h','g'),('g','d'),('d','f'),
                                      ('f','a')]
     """
+    ds = DisjointSet()
+    nodes = G.nodes
+    edges = G.edges
+    
+    ds.makeSet(nodes)
+    
+    for edge in edges:
+        if ds.find(edge[0]) == ds.find(edge[1]):
+            ds.unions[ds.find(edge[0])].append(edge)
+            the_ring= ds.unions[ds.find(edge[0])]
+            print(the_ring)
+            return True, the_ring
+        else:
+            ds.union(edge)
 
+    return False, []
 
 class RingTest(unittest.TestCase):
     """
@@ -85,13 +147,13 @@ class RingTest(unittest.TestCase):
             3,
             "A ring consists of at least 3 edges."
         )
-
+        print(f"edges in ring: {edges}")
         for i, (u_i, v_i) in enumerate(edges[:-1]):
             u_j, v_j = edges[i+1]
             self.assertTrue(
                 u_i in set([u_j, v_j]) or v_i in set([u_j, v_j]),
                 f"The edges ('{u_i}', '{v_i}') and "
-                f"('{u_j}', '{v_i}') are not connected."
+                f"('{u_j}', '{v_j}') are not connected."
             )
 
         u_1, v_1 = edges[0]
