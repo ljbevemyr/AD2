@@ -34,9 +34,6 @@ import logging  # noqa
 
 __all__ = ['ring', 'ring_extended']
 
-ring_holder = []
-visited = []
-
 def dfs(graph, visited, node, came_from):
     visited.append(node)
     for neighbour in graph.neighbors(node):
