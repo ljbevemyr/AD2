@@ -51,12 +51,11 @@ def dfs(graph, visited, node, came_from):
 
 def dfs_extended(graph, path, node, came_from):
     if came_from == None:
-        visited.append(node)
+        visited.add(node)
         path.append(node)
     
     for i, neighbour in enumerate(graph.neighbors(node)):
-        if neighbour not in visited:
-            visited.append(neighbour)
+        visited.add(neighbour)
         path = path[:path.index(node)+1] #Backtrack to node who's for-loop we're in
         if neighbour not in path:
             path.append(neighbour)
@@ -97,7 +96,7 @@ def ring(G: Graph) -> bool:
     #Vanlig dfs-lösning. Borde funka för disconnected
     '''
     nodes = G.nodes
-    visited = []
+    visited = set()
     for node in nodes:
         if node not in visited:
            if dfs(G, visited, node, None):
@@ -121,8 +120,8 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     global ring_holder
     global visited
     ring_holder = []
-    visited = []
-    path = []
+    visited = set() #Förhindrar dubbletter, snabb lookup
+    path = [] #sets kan ändra ordning
     nodes = G.nodes
     
     #Osäker på om detta funkar för disconnected graphs. Klarar alla tester dock
@@ -137,7 +136,7 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     #Tidskomplexiteeeeeet?? Går det att förbättra? Körs på samma tid som det ovan så kanske okej?
     for node in nodes:
         ring_holder = []
-        if node not in visited:
+        if node not in visited: #O(1) avarage
             if dfs_extended(G, path, node, None):
                 return True, ring_holder
 
