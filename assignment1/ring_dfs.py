@@ -49,7 +49,7 @@ def dfs(graph, visited, node, came_from):
     return False
 
 
-def dfs_extended(graph, path, node, came_from):
+def dfs_extended(graph, visited, path, node, came_from):
     if came_from == None:
         visited.add(node)
         path.append(node)
@@ -59,15 +59,17 @@ def dfs_extended(graph, path, node, came_from):
         path = path[:path.index(node)+1] #Backtrack to node who's for-loop we're in
         if neighbour not in path:
             path.append(neighbour)
-            if dfs_extended(graph, path, neighbour, node):
-                return True 
+            found, edge_path = dfs_extended(graph, visited, path, neighbour, node)
+            if found:
+                return True, edge_path 
         elif neighbour != came_from:
             path.append(neighbour) #Add again to make nice pairs
             node_path = path[path.index(neighbour):]
+            edge_path = []
             for i in range(len(node_path)-1): #Don't loop through last one
-                ring_holder.append((node_path[i], node_path[i+1]))
-            return True 
-    return False
+                edge_path.append((node_path[i], node_path[i+1]))
+            return True, edge_path 
+    return False, []
 
 def ring(G: Graph) -> bool:
     """
@@ -117,11 +119,11 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
                                      ('f','a')]
     """
 
-    global ring_holder
-    global visited
     ring_holder = []
     visited = set() #Förhindrar dubbletter, snabb lookup
-    path = [] #sets kan ändra ordning
+    path = [] #sets kan ändra ordning. Path skickas bara med som place holder för att den inte 
+              # kan skapas i dfs-funktionen (skulle skrivas över varje rekursion). Den innehåller
+              # inget vettigt när funktionen returnerar helt. Kanske finns snyggare sätt?
     nodes = G.nodes
     
     #Osäker på om detta funkar för disconnected graphs. Klarar alla tester dock
@@ -137,8 +139,9 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     for node in nodes:
         ring_holder = []
         if node not in visited: #O(1) avarage
-            if dfs_extended(G, path, node, None):
-                return True, ring_holder
+            found, edge_path = dfs_extended(G, visited, path, node, None)
+            if found:
+                return True, edge_path
 
     return False, [] 
     
