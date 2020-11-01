@@ -38,7 +38,7 @@ ring_holder = []
 visited = []
 
 def dfs(graph, visited, node, came_from):
-    visited.add(node)
+    visited.append(node)
     for neighbour in graph.neighbors(node):
         if neighbour not in visited:
             if dfs(graph, visited, neighbour, node):
@@ -82,6 +82,7 @@ def ring(G: Graph) -> bool:
 
     #Alltsåeeee, detta funkar ju också. Lär ju 100% vara det absolut snabbaste "algoritmen"?
     #Finns det något fall det inte funkar?
+    
     nodes = G.nodes
     edges = G.edges
 
@@ -92,11 +93,11 @@ def ring(G: Graph) -> bool:
             return False
         else:
             return True
+    
+    #Vanlig dfs-lösning. Borde funka för disconnected
     '''
-    visited = set()
-
     nodes = G.nodes
-
+    visited = []
     for node in nodes:
         if node not in visited:
            if dfs(G, visited, node, None):
@@ -132,13 +133,13 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     return False, [] 
     '''
     
+    #Bör funka för disconnected?
     #Tidskomplexiteeeeeet?? Går det att förbättra? Körs på samma tid som det ovan så kanske okej?
-    if len(nodes) > 0:
-        for node in nodes:
-            ring_holder = []
-            if node not in visited:
-                if dfs_extended(G, path, node, None):
-                    return True, ring_holder
+    for node in nodes:
+        ring_holder = []
+        if node not in visited:
+            if dfs_extended(G, path, node, None):
+                return True, ring_holder
 
     return False, [] 
     
