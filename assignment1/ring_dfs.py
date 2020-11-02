@@ -20,7 +20,7 @@ all copies and extensions of this file, and those are not allowed to
 appear publicly on the internet, both during a course instance and
 forever after.
 '''
-from typing import Set, Tuple  # noqa
+from typing import List, Set, Tuple  # noqa
 import unittest  # noqa
 from src.graph import Graph  # noqa
 from src.ring_data import data  # noqa
@@ -34,38 +34,69 @@ import logging  # noqa
 
 __all__ = ['ring', 'ring_extended']
 
-def dfs(graph, visited, node, came_from):
-    visited.append(node)
+def dfs(graph: Graph, visited: Set[str], node: str, came_from: str) -> bool:
+    """
+    Sig:  graph: Graph, visited: Set[str], node: str, came_from: str) -> bool
+    Pre:  (none)
+    Post: visited contains all visited nodes
+    Ex:   graph = <V=(a,b,c,d), E=((a, b),(b, c),(c, d),(d, a))>
+          visited = {}
+          node = 'a'
+          came_from = None
+          dfs(graph, visited, node, came_from)
+          The return value from dfs is True, visited is now {a,b,c,d}
+    """
+    visited.add(node)
     for neighbour in graph.neighbors(node):
+        # Invariant: visited contains one new neighbour and all previous neighbours
+        # Variant: len(graph.neighbors(node)) - graph.neighbors.index(neighbour)
         if neighbour not in visited:
             if dfs(graph, visited, neighbour, node):
+                # Variant: len(graph.nodes) - len(visited)
                 return True
         elif neighbour != came_from:
             return True
-    
+
     return False
 
 
-def dfs_extended(graph, visited, path, node, came_from):
+def dfs_extended(graph: Graph, visited: List[str], path: Set[str], node: str, came_from: str) -> Tuple[bool, List[Tuple[str, str]]]:
+    """
+    Sig:  graph: Graph, visited: Set[str], path: List[str], node: str, came_from: str) -> Tuple[bool, List[Tuple[str, str]]]
+    Pre:  (none)
+    Post: visited contains all visited nodes
+    Ex:   graph = <V=(a,b,c,d), E=((a, b),(b, c),(c, d),(d, a))>
+          visited = {}
+          path = []
+          node = 'a'
+          came_from = None
+          dfs_extended(graph, visited, path, node, came_from)
+          The return value from dfs is True and a list of all
+          edges in a ring, visited is now {a,b,c,d}
+    """
     if came_from == None:
         visited.add(node)
         path.append(node)
-    
+
     for i, neighbour in enumerate(graph.neighbors(node)):
+        # Invariant: visited contains one new neighbour and all previous neighbours
+        # Variant: len(graph.neighbors(node)) - i
         visited.add(neighbour)
         path = path[:path.index(node)+1] #Backtrack to node who's for-loop we're in
         if neighbour not in path:
             path.append(neighbour)
             found, edge_path = dfs_extended(graph, visited, path, neighbour, node)
+            # Variant: len(graph.nodes) - len(visited)
             if found:
-                return True, edge_path 
+                return True, edge_path
         elif neighbour != came_from:
             path.append(neighbour) #Add again to make nice pairs
             node_path = path[path.index(neighbour):]
             edge_path = []
             for i in range(len(node_path)-1): #Don't loop through last one
+                #Variant: len(node_path) - i
                 edge_path.append((node_path[i], node_path[i+1]))
-            return True, edge_path 
+            return True, edge_path
     return False, []
 
 def ring(G: Graph) -> bool:
@@ -80,7 +111,7 @@ def ring(G: Graph) -> bool:
 
     #Alltsåeeee, detta funkar ju också. Lär ju 100% vara det absolut snabbaste "algoritmen"?
     #Finns det något fall det inte funkar?
-    
+    '''
     nodes = G.nodes
     edges = G.edges
 
@@ -91,17 +122,18 @@ def ring(G: Graph) -> bool:
             return False
         else:
             return True
-    
-    #Vanlig dfs-lösning. Borde funka för disconnected
     '''
+    #Vanlig dfs-lösning. Borde funka för disconnected
+
     nodes = G.nodes
     visited = set()
     for node in nodes:
+        # Variant: len(nodes) - nodes.index(node)
         if node not in visited:
            if dfs(G, visited, node, None):
                return True
-    return False 
-    '''
+    return False
+
 
 
 def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
@@ -117,30 +149,31 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     """
 
     visited = set() #Förhindrar dubbletter, snabb lookup
-    path = [] #sets kan ändra ordning. Path skickas bara med som place holder för att den inte 
+    path = [] #sets kan ändra ordning. Path skickas bara med som place holder för att den inte
               # kan skapas i dfs-funktionen (skulle skrivas över varje rekursion). Den innehåller
               # inget vettigt när funktionen returnerar helt. Kanske finns snyggare sätt?
     nodes = G.nodes
-    
+
     #Osäker på om detta funkar för disconnected graphs. Klarar alla tester dock
     '''
     if len(nodes) > 0:
         found, edge_path = dfs_extended(G, visited, path, node, None)
         if found
             return True, edge_path
-    return False, [] 
+    return False, []
     '''
-    
+
     #Bör funka för disconnected?
     #Tidskomplexiteeeeeet?? Går det att förbättra? Körs på samma tid som det ovan så kanske okej?
     for node in nodes:
+        # Variant: len(nodes) - nodes.index(node)
         if node not in visited: #O(1) average
             found, edge_path = dfs_extended(G, visited, path, node, None)
             if found:
                 return True, edge_path
 
-    return False, [] 
-    
+    return False, []
+
 class RingTest(unittest.TestCase):
     """
     Test Suite for ring detection problem

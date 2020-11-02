@@ -59,15 +59,6 @@ class DisjointSet:
         self.unions[b_rep] += self.unions[a_rep]
         self.unions[b_rep].append(edge)
         self.unions.pop(a_rep)
-    
-    def getUnion(self, k, all_nodes):
-        rep = self.find(k)
-        union = set()
-        for node in all_nodes:
-            if self.find(node) == rep:
-                union.add(node)
-        
-
 
 def ring(G: Graph) -> bool:
     """
