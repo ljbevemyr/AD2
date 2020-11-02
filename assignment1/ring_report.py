@@ -1,33 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-'''
-Assignment 1, Problem 2: Ring Detection
-
-Team Number: 11
-Student Names: Lisa Bevemyr & Maja Danielsson 
-'''
-
-'''
-Copyright: justin.pearson@it.uu.se and his teaching assistants, 2020.
-
-This file is part of course 1DL231 at Uppsala University, Sweden.
-
-Permission is hereby granted only to the registered students of that
-course to use this file, for a homework assignment.
-
-The copyright notice and permission notice above shall be included in
-all copies and extensions of this file, and those are not allowed to
-appear publicly on the internet, both during a course instance and
-forever after.
-'''
-from typing import List, Set, Tuple  # noqa
-import unittest  # noqa
-from src.graph import Graph  # noqa
-from src.ring_data import data  # noqa
-import logging  # noqa
-
-__all__ = ['ring', 'ring_extended']
-
 def dfs(graph: Graph, visited: Set[str], node: str, came_from: str) -> bool:
     """
     Sig:  graph: Graph, visited: Set[str], node: str, came_from: str) -> bool
