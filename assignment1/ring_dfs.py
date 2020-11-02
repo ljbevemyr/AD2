@@ -116,7 +116,6 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
                                      ('f','a')]
     """
 
-    ring_holder = []
     visited = set() #Förhindrar dubbletter, snabb lookup
     path = [] #sets kan ändra ordning. Path skickas bara med som place holder för att den inte 
               # kan skapas i dfs-funktionen (skulle skrivas över varje rekursion). Den innehåller
@@ -126,16 +125,16 @@ def ring_extended(G: Graph) -> Tuple[bool, Set[Tuple[str, str]]]:
     #Osäker på om detta funkar för disconnected graphs. Klarar alla tester dock
     '''
     if len(nodes) > 0:
-        if dfs_extended(G, path, nodes[0], None):
-            return True, ring_holder
+        found, edge_path = dfs_extended(G, visited, path, node, None)
+        if found
+            return True, edge_path
     return False, [] 
     '''
     
     #Bör funka för disconnected?
     #Tidskomplexiteeeeeet?? Går det att förbättra? Körs på samma tid som det ovan så kanske okej?
     for node in nodes:
-        ring_holder = []
-        if node not in visited: #O(1) avarage
+        if node not in visited: #O(1) average
             found, edge_path = dfs_extended(G, visited, path, node, None)
             if found:
                 return True, edge_path
