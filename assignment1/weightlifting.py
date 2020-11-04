@@ -33,6 +33,44 @@ import logging  # noqa
 
 __all__ = ['weightlifting', 'weightlifting_subset']
 
+def wl2(P, idx, w, mem, subSet):
+    if w == 0:
+        subSet.add(P[idx])
+        return True
+    if idx < 0 or w < 0:
+        return False
+
+    key = (idx, w)
+    new_weight = w - P[idx]
+
+    if key not in mem:
+        include = wl2(P, idx-1, new_weight, mem, subSet)
+        if include:
+            subSet.add(P[idx])
+        
+        exclude = wl2(P, idx-1, w, mem, subSet)
+
+        mem[key] = include or exclude
+    
+    return mem[key]
+
+def wl(P, idx, w, mem):
+    if w == 0:
+        return True
+    if idx < 0 or w < 0:
+        return False
+
+    key = (idx, w)
+    new_weight = w - P[idx]
+
+    if key not in mem:
+        include = wl(P, idx-1, new_weight, mem)
+        exclude = wl(P, idx-1, w, mem)
+
+        mem[key] = include or exclude
+    
+    return mem[key]
+    
 
 def weightlifting(P: Set[int], weight: int) -> bool:
     '''
@@ -45,6 +83,9 @@ def weightlifting(P: Set[int], weight: int) -> bool:
     '''
     plate_list = list(P)
     # Initialise the dynamic programming matrix, A
+    mem = {}
+    return wl(list(P), len(P)-1, weight, mem)
+
     dp_matrix = [
         [None for i in range(weight + 1)] for j in range(len(plate_list) + 1)
     ]
@@ -59,8 +100,17 @@ def weightlifting_subset(P: Set[int], weight: int) -> Set[int]:
           weightlifting_subset(P, 299) = {56, 7, 234, 2}
           weightlifting_subset(P, 11) = {}
     '''
-
-
+    subSet = set()
+    if weight == 0 or len(P) == 0:
+        return subSet
+    mem = {}
+    
+    wl2(list(P), len(P)-1, weight, mem, subSet)
+    print(f'set: {P}')
+    print(f'w: {weight}')
+    print(subSet)
+    
+    return subSet
 class weightliftingTest(unittest.TestCase):
     """
     Test Suite for weightlifting problem
