@@ -31,7 +31,7 @@ __all__ = ['ring', 'ring_extended']
 def dfs(graph: Graph, visited: Set[str], node: str, came_from: str) -> bool:
     """
     Sig:  graph: Graph, visited: Set[str], node: str, came_from: str) -> bool
-    Pre:  (none)
+    Pre:  came_from must be None. visited must be empty.
     Post: visited contains all visited nodes
     Ex:   graph = <V=(a,b,c,d), E=((a, b),(b, c),(c, d),(d, a))>
           visited = {}
@@ -57,7 +57,7 @@ def dfs(graph: Graph, visited: Set[str], node: str, came_from: str) -> bool:
 def dfs_extended(graph: Graph, visited: List[str], path: Set[str], node: str, came_from: str) -> Tuple[bool, List[Tuple[str, str]]]:
     """
     Sig:  graph: Graph, visited: Set[str], path: List[str], node: str, came_from: str) -> Tuple[bool, List[Tuple[str, str]]]
-    Pre:  (none)
+    Pre:  came_from must be None. visited and path must be empty.
     Post: visited contains all visited nodes
     Ex:   graph = <V=(a,b,c,d), E=((a, b),(b, c),(c, d),(d, a))>
           visited = {}

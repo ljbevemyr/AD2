@@ -3,8 +3,8 @@
 '''
 Assignment 1, Problem 1: Weightlifting
 
-Team Number:
-Student Names:
+Team Number: 11
+Student Names: Lisa Bevemyr and Maja Danielsson
 '''
 
 '''
@@ -33,9 +33,21 @@ import logging  # noqa
 
 __all__ = ['weightlifting', 'weightlifting_subset']
 
-def wl2(P, idx, w, mem, subSet):
+def wl_extended(P: List[int], idx: int, w: int, mem: dict, subSet: set()) -> bool:
+    '''
+    Sig:  P: List[int], idx: int, w: int, mem: dict, subSet: set()) -> bool
+    Pre:  mem and subSet must be empty. idx must be the last index in P.
+    Post: mem will contain bools for all visited values in P,
+          for each respective weight. subSet will contain a set
+          of values which sum up to w.
+    Ex:   P: [7, 40, 9, 24, 95]
+          idx: 4
+          w: 102
+          mem: {}
+          subSet: {}
+          wl_extended(P, 4, 102, {}) = True (subSet will contain {7, 95})
+    '''
     if w == 0:
-        subSet.add(P[idx])
         return True
     if idx < 0 or w < 0:
         return False
@@ -44,17 +56,29 @@ def wl2(P, idx, w, mem, subSet):
     new_weight = w - P[idx]
 
     if key not in mem:
-        include = wl2(P, idx-1, new_weight, mem, subSet)
+        include = wl_extended(P, idx-1, new_weight, mem, subSet)
         if include:
             subSet.add(P[idx])
-        
-        exclude = wl2(P, idx-1, w, mem, subSet)
+        else:
+            exclude = wl_extended(P, idx-1, w, mem, subSet)
 
         mem[key] = include or exclude
-    
+
     return mem[key]
 
-def wl(P, idx, w, mem):
+
+def wl(P: List[int], idx: int, w: int, mem: dict) -> bool:
+    '''
+    Sig:  (P: List[int], idx: int, w: int, mem: dict) -> bool
+    Pre:  mem must be empty. idx must be the last index in P.
+    Post: mem will contain bools for all visited values in P,
+          for each respective weight.
+    Ex:   P: [7, 40, 9, 24, 95]
+          idx: 4
+          w: 102
+          mem: {}
+          wl(P, 4, 102, {}) = True
+    '''
     if w == 0:
         return True
     if idx < 0 or w < 0:
@@ -68,9 +92,9 @@ def wl(P, idx, w, mem):
         exclude = wl(P, idx-1, w, mem)
 
         mem[key] = include or exclude
-    
+
     return mem[key]
-    
+
 
 def weightlifting(P: Set[int], weight: int) -> bool:
     '''
@@ -82,13 +106,8 @@ def weightlifting(P: Set[int], weight: int) -> bool:
           weightlifting(P, 11) = False
     '''
     plate_list = list(P)
-    # Initialise the dynamic programming matrix, A
     mem = {}
     return wl(list(P), len(P)-1, weight, mem)
-
-    dp_matrix = [
-        [None for i in range(weight + 1)] for j in range(len(plate_list) + 1)
-    ]
 
 
 def weightlifting_subset(P: Set[int], weight: int) -> Set[int]:
@@ -101,93 +120,11 @@ def weightlifting_subset(P: Set[int], weight: int) -> Set[int]:
           weightlifting_subset(P, 11) = {}
     '''
     subSet = set()
+
     if weight == 0 or len(P) == 0:
         return subSet
     mem = {}
-    
-    wl2(list(P), len(P)-1, weight, mem, subSet)
-    print(f'set: {P}')
-    print(f'w: {weight}')
-    print(subSet)
-    
+
+    wl_extended(list(P), len(P)-1, weight, mem, subSet)
+
     return subSet
-class weightliftingTest(unittest.TestCase):
-    """
-    Test Suite for weightlifting problem
-
-    Any method named "test_something" will be run when this file is executed.
-    Use the sanity check as a template for adding your own test cases if you
-    wish. (You may delete this class from your submitted solution.)
-    """
-    logger = logging.getLogger('WeightLiftingTest')
-
-    def test_satisfy_sanity(self):
-        """
-        Sanity Test for weightlifting()
-
-        passing is not a guarantee of correctness.
-        """
-        plates = {2, 32, 234, 35, 12332, 1, 7, 56}
-        self.assertTrue(
-            weightlifting(plates, 299)
-        )
-        self.assertFalse(
-            weightlifting(plates, 11)
-        )
-
-    def test_subset_sanity(self):
-        """
-        Sanity Test for weightlifting_subset()
-
-        passing is not a guarantee of correctness.
-        """
-        plates = {2, 32, 234, 35, 12332, 1, 7, 56}
-        weight = 299
-        sub = weightlifting_subset(plates, weight)
-        for p in sub:
-            self.assertIn(p, plates)
-        self.assertEqual(sum(sub), weight)
-
-        weight = 11
-        sub = weightlifting_subset(plates, weight)
-        self.assertSetEqual(sub, set())
-
-    def test_satisfy(self):
-        for instance in data:
-            self.assertEqual(
-                weightlifting(instance["plates"], instance["weight"]),
-                instance["expected"]
-            )
-
-    def test_subset(self):
-        """
-        Sanity Test for weightlifting_subset()
-
-        passing is not a guarantee of correctness.
-        """
-        for instance in data:
-            plates = weightlifting_subset(
-                instance["plates"].copy(),
-                instance["weight"]
-            )
-            self.assertEqual(type(plates), set)
-
-            for plate in plates:
-                self.assertIn(plate, instance["plates"])
-
-            if instance["expected"]:
-                self.assertEqual(
-                    sum(plates),
-                    instance["weight"]
-                )
-            else:
-                self.assertSetEqual(
-                    plates,
-                    set()
-                )
-
-
-if __name__ == '__main__':
-    # Set logging config to show debug messages.
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()
