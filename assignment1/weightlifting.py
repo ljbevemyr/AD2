@@ -57,10 +57,12 @@ def wl_extended(P: List[int], idx: int, w: int, mem: dict, subSet: set()) -> boo
 
     if key not in mem:
         include = wl_extended(P, idx-1, new_weight, mem, subSet)
+        #Variant: idx, new_weight - P[idx - 1]
         if include:
             subSet.add(P[idx])
         else:
             exclude = wl_extended(P, idx-1, w, mem, subSet)
+            #Variant: idx
 
         mem[key] = include or exclude
 
@@ -89,7 +91,10 @@ def wl(P: List[int], idx: int, w: int, mem: dict) -> bool:
 
     if key not in mem:
         include = wl(P, idx-1, new_weight, mem)
+        #Variant: idx, new_weight - P[idx - 1]
+        
         exclude = wl(P, idx-1, w, mem)
+        #Variant: idx
 
         mem[key] = include or exclude
 
@@ -105,7 +110,6 @@ def weightlifting(P: Set[int], weight: int) -> bool:
           weightlifting(P, 299) = True
           weightlifting(P, 11) = False
     '''
-    plate_list = list(P)
     mem = {}
     return wl(list(P), len(P)-1, weight, mem)
 
