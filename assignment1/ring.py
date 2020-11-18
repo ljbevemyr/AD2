@@ -75,8 +75,8 @@ def dfs_extended(graph: Graph, visited: Set[str], path: List[str], node: str, ca
     for i, neighbour in enumerate(graph.neighbors(node)):
         # Invariant: visited contains one new neighbour and all previous neighbours
         # Variant: len(graph.neighbors(node)) - i
-        visited.add(neighbour)
-        if neighbour not in path:
+        if neighbour not in visited:
+            visited.add(neighbour)
             path.append(neighbour)
             found, edge_path = dfs_extended(graph, visited, path, neighbour, node)
             # Variant: len(graph.nodes) - len(visited)

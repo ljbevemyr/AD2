@@ -49,8 +49,47 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     """
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
+    #print('NEW')
+    #u is x-axis and r is y-axix
+    DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
+        
+    for i in range(len(r)+1):
+        #print(f'i: {i}')
+        for j in range(len(u)+1):
+            #print(f'j: {j}')
+            if i == 0 and j == 0:
+                DP[i][j] = R['-']['-']
 
-
+            elif i == 0:
+                DP[i][j] = R[u[j-1]]['-']
+            
+            elif j == 0:
+                DP[i][j] = R['-'][r[i-1]]
+            else:
+                '''
+                fnutt = '-'
+                print(f'u: {u[j-1]}')
+                print(f'r: {r[i-1]}')
+                print(f'Replace: {R[u[j-1]][r[i-1]] + DP[i-1][j-1]}')
+                print(f'Insert:  {R[fnutt][r[i-1]] + DP[i][j-1]}') 
+                print(f'Remove:  {R[u[j-1]][fnutt] + DP[i-1][j]}')
+                print(DP[i-2][j-2])
+                '''
+                '''
+                DP[i][j] = min((R[u[j-1]][r[i-1]] + DP[i-1][j-1]),    #REPLACE
+                                (R['-'][r[i-1]] + DP[i-1][j]),        #INSERT (skip in r)
+                                (R[u[j-1]]['-'] + DP[i][j-1]))        #REMOVE (skip in u)                         
+                '''
+                DP[i][j] = min((R[u[j-1]][r[i-1]] + DP[i-1][j-1]),    #REPLACE
+                                (R['-'][r[i-1]] + DP[i][j-1]),        #INSERT (skip in r)
+                                (R[u[j-1]]['-'] + DP[i-1][j]))        #REMOVE (skip in u)
+            
+    '''        
+    for row in DP:
+        print(row)
+    '''
+    return DP[len(r)][len(u)]
+    
 # Solution to Task C:
 def min_difference_align(u: str, r: str,
                          R: Dict[str, Dict[str, int]]) -> Tuple[int, str, str]:
@@ -65,6 +104,63 @@ def min_difference_align(u: str, r: str,
                                     3, "dinam-ck", "dynamic-"
     """
 
+    print('NEW')
+    #u is x-axis and r is y-axix
+    DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
+    res_u = ""
+    res_r = ""    
+    for i in range(len(r)+1):
+        print(f'i: {i}')
+        for j in range(len(u)+1):
+            print(f'j: {j}')
+            if i == 0 and j == 0:
+                DP[i][j] = R['-']['-']
+
+            elif i == 0:
+                DP[i][j] = R[u[j-1]]['-']
+            
+            elif j == 0:
+                DP[i][j] = R['-'][r[i-1]]
+            else:
+                fnutt = '-'
+                print(f'u: {u[j-1]}')
+                print(f'r: {r[i-1]}')
+                print(f'Replace: {R[u[j-1]][r[i-1]] + DP[i-1][j-1]}')
+                print(f'Insert:  {R[fnutt][r[i-1]] + DP[i][j-1]}') 
+                print(f'Remove:  {R[u[j-1]][fnutt] + DP[i-1][j]}')
+                print(DP[i-2][j-2])
+                '''
+                DP[i][j] = min((R[u[j-1]][r[i-1]] + DP[i-1][j-1]),    #REPLACE
+                                (R['-'][r[i-1]] + DP[i-1][j]),        #INSERT (skip in r)
+                                (R[u[j-1]]['-'] + DP[i][j-1]))        #REMOVE (skip in u)                         
+                '''
+                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1]
+                insert = R['-'][r[i-1]] + DP[i][j-1]
+                remove = R[u[j-1]]['-'] + DP[i-1][j]
+
+                operations = [replace, insert, remove]
+                min_cost = min(operations)
+                min_operation = operations.index(min_cost)
+
+                if min_operation == 0: #REPLACE
+                    res_u += r[i-1]
+                    res_r += r[i-1]
+                elif min_operation == 1: #INSERT
+                    res_u += '-'
+                    res_r += r[i-1]
+                elif min_operation == 2: #DELETE
+                    res_u += u[j-1]
+                    res_r += '-'
+
+
+                DP[i][j] = min_cost
+            
+    print(f'res_u: {res_u}')
+    print(f'res_r: {res_r}')       
+    for row in DP:
+        print(row)
+
+    return (DP[len(r)][len(u)], res_u, res_r)
 
 # Sample matrix provided by us:
 def qwerty_distance() -> Dict[str, Dict[str, int]]:
@@ -114,7 +210,7 @@ class MinDifferenceTest(unittest.TestCase):
     (You may delete this class from your submitted solution.)
     """
     logger = logging.getLogger('MinDifferenceTest')
-
+    '''
     def test_diff_sanity(self):
         """
         Difference sanity test
@@ -129,8 +225,8 @@ class MinDifferenceTest(unittest.TestCase):
             a: {b: (0 if a == b else 1) for b in alphabet} for a in alphabet
         }
         # Warning: we may (read: 'will') use another matrix!
-        self.assertEqual(min_difference("dinamck", "dynamic", R), 3)
-
+        self.assertEqual(min_difference("d", "l", R), 1)
+    '''
     def test_align_sanity(self):
         """
         Simple alignment
@@ -151,7 +247,7 @@ class MinDifferenceTest(unittest.TestCase):
             self.logger.warning(f"'{u}' != '--polyn-om-ial'")
         if r != 'exp-o-ne-ntial':
             self.logger.warning(f"'{r}' != 'exp-o-ne-ntial'")
-
+    '''
     def test_min_difference(self):
         R = qwerty_distance()
         for instance in data:
@@ -160,8 +256,10 @@ class MinDifferenceTest(unittest.TestCase):
                 instance["r"],
                 R
             )
+            print(instance["u"])
+            print(instance["r"])
             self.assertEqual(instance["expected"], difference)
-
+    '''
     def test_min_difference_align(self):
         R = qwerty_distance()
         for instance in data:
@@ -176,8 +274,7 @@ class MinDifferenceTest(unittest.TestCase):
             self.assertEqual(u_diff, 0)
             r_diff, _, _ = min_difference_align(r, instance["r"], R)
             self.assertEqual(r_diff, 0)
-
-
+    
 if __name__ == '__main__':
     # Set logging config to show debug messages.
     logging.basicConfig(level=logging.DEBUG)
