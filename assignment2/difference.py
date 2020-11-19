@@ -3,8 +3,8 @@
 '''
 Assignment 2, Problem 1: Search String Replacement
 
-Team Number:
-Student Names:
+Team Number: 11
+Student Names: Lisa Bevemyr & Maja Danielsson
 '''
 
 '''
@@ -52,22 +52,20 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     #print('NEW')
     #u is x-axis and r is y-axix
 
-    DP = [ [ None for i in range(len(r)+1) ] for j in range(len(u)+1) ]
+    DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
  
-    for i in range(len(u)+1): # 0-3
-        for j in range(len(r)+1): # 0-3
+    for i in range(len(r)+1): # 0-3
+        for j in range(len(u)+1): # 0-3
             if i == 0 and j == 0:
                 DP[i][j] = R['-']['-']
 
             elif i == 0:
                 #print(R[u[j-1]]['-'])
-                DP[i][j] = R[u[i-1]]['-']
+                DP[i][j] = R[u[j-1]]['-'] + DP[i][j-1]
 
             elif j == 0:
                 #print(R['-'][r[i-1]])
-                DP[i][j] = R['-'][r[j-1]]
-            elif u[i-1] == r[j-1]:
-                DP[i][j] = DP[i-1][j-1] 
+                DP[i][j] = R['-'][r[i-1]] + DP[i-1][j]
             else:
                 
                 fnutt = '-'
@@ -80,23 +78,17 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
                 print(DP[i-2][j-2])
                 '''
                 
-                replace = R[u[i-1]][r[j-1]] + DP[i-1][j-1]
-                insert = R['-'][r[j-1]] + DP[i][j-1]
-                remove = R[u[i-1]]['-'] + DP[i-1][j]
+                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1]
+                insert = R['-'][r[i-1]] + DP[i-1][j]
+                remove = R[u[j-1]]['-'] + DP[i][j-1]
                 
-                '''
-                replace = R[u[i-1]][r[j-1]] + DP[i-1][j-1]
-                insert =  R[u[i-1]]['-'] + DP[i][j-1]
-                remove =  R['-'][r[j-1]] + DP[i-1][j]
-                '''
-
                 print(f'Diag: {DP[i-1][j-1]}')
                 print(f'Up: {DP[i-1][j]}')
                 print(f'Left: {DP[i][j-1]}')
 
-                print(f'Cost replace: {R[u[i-1]][r[j-1]]}')
-                print(f'Cost insert: {R[fnutt][r[j-1]]}')
-                print(f'Cost remove: {R[u[i-1]][fnutt]}')
+                print(f'Cost replace: {R[u[j-1]][r[i-1]]}')
+                print(f'Cost insert: {R[fnutt][r[i-1]]}')
+                print(f'Cost remove: {R[u[j-1]][fnutt]}')
 
                 print(f'Replace: {replace}')
                 print(f'Insert: {insert}')
@@ -288,7 +280,7 @@ class MinDifferenceTest(unittest.TestCase):
         # Warning: we may (read: 'will') use another matrix!
         self.assertEqual(min_difference("benyam", "ephrem", R), 5)
     '''
-    '''
+    
     def test_align_sanity(self):
         """
         Simple alignment
@@ -313,7 +305,6 @@ class MinDifferenceTest(unittest.TestCase):
             self.logger.warning(f"'{u}' != '--polyn-om-ial'")
         if r != 'exp-o-ne-ntial':
             self.logger.warning(f"'{r}' != 'exp-o-ne-ntial'")
-    '''
     
     def test_min_difference(self):
         R = qwerty_distance()
@@ -327,7 +318,7 @@ class MinDifferenceTest(unittest.TestCase):
             )
             self.assertEqual(instance["expected"], difference)
     
-    '''
+    
     def test_min_difference_align(self):
         R = qwerty_distance()
         for instance in data:
@@ -342,7 +333,7 @@ class MinDifferenceTest(unittest.TestCase):
             self.assertEqual(u_diff, 0)
             r_diff, _, _ = min_difference_align(r, instance["r"], R)
             self.assertEqual(r_diff, 0)
-    '''
+    
 if __name__ == '__main__':
     # Set logging config to show debug messages.
     logging.basicConfig(level=logging.DEBUG)
