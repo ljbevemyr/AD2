@@ -51,23 +51,27 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     # difference = R['a']['b']
     #print('NEW')
     #u is x-axis and r is y-axix
-    DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
 
-    for i in range(len(r)+1):
-        #print(f'i: {i}')
-        for j in range(len(u)+1):
-            #print(f'j: {j}')
+    DP = [ [ None for i in range(len(r)+1) ] for j in range(len(u)+1) ]
+ 
+    for i in range(len(u)+1): # 0-3
+        for j in range(len(r)+1): # 0-3
             if i == 0 and j == 0:
                 DP[i][j] = R['-']['-']
 
             elif i == 0:
-                DP[i][j] = R[u[j-1]]['-']
+                #print(R[u[j-1]]['-'])
+                DP[i][j] = R[u[i-1]]['-']
 
             elif j == 0:
-                DP[i][j] = R['-'][r[i-1]]
+                #print(R['-'][r[i-1]])
+                DP[i][j] = R['-'][r[j-1]]
+            elif u[i-1] == r[j-1]:
+                DP[i][j] = DP[i-1][j-1] 
             else:
-                '''
+                
                 fnutt = '-'
+                '''
                 print(f'u: {u[j-1]}')
                 print(f'r: {r[i-1]}')
                 print(f'Replace: {R[u[j-1]][r[i-1]] + DP[i-1][j-1]}')
@@ -75,14 +79,37 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
                 print(f'Remove:  {R[u[j-1]][fnutt] + DP[i-1][j]}')
                 print(DP[i-2][j-2])
                 '''
+                
+                replace = R[u[i-1]][r[j-1]] + DP[i-1][j-1]
+                insert = R['-'][r[j-1]] + DP[i][j-1]
+                remove = R[u[i-1]]['-'] + DP[i-1][j]
+                
                 '''
-                DP[i][j] = min((R[u[j-1]][r[i-1]] + DP[i-1][j-1]),    #REPLACE
-                                (R['-'][r[i-1]] + DP[i-1][j]),        #INSERT (skip in r)
-                                (R[u[j-1]]['-'] + DP[i][j-1]))        #REMOVE (skip in u)                         
+                replace = R[u[i-1]][r[j-1]] + DP[i-1][j-1]
+                insert =  R[u[i-1]]['-'] + DP[i][j-1]
+                remove =  R['-'][r[j-1]] + DP[i-1][j]
+                '''
+
+                print(f'Diag: {DP[i-1][j-1]}')
+                print(f'Up: {DP[i-1][j]}')
+                print(f'Left: {DP[i][j-1]}')
+
+                print(f'Cost replace: {R[u[i-1]][r[j-1]]}')
+                print(f'Cost insert: {R[fnutt][r[j-1]]}')
+                print(f'Cost remove: {R[u[i-1]][fnutt]}')
+
+                print(f'Replace: {replace}')
+                print(f'Insert: {insert}')
+                print(f'Remove: {remove}')
+
+                DP[i][j] = min(replace, insert, remove)
+                print(f'CHOSEN: {DP[i][j]}')                       
+                
                 '''
                 DP[i][j] = min((R[u[j-1]][r[i-1]] + DP[i-1][j-1]),    #REPLACE
                                 (R['-'][r[i-1]] + DP[i][j-1]),        #INSERT (skip in r)
                                 (R[u[j-1]]['-'] + DP[i-1][j]))        #REMOVE (skip in u)
+                '''
     '''
     for row in DP:
         print(row)
@@ -131,10 +158,16 @@ def min_difference_align(u: str, r: str,
                 exp-o-ne-ntial
 
                 '''
+                
                 replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1][0]
                 insert = R['-'][r[i-1]] + DP[i-1][j][0]
                 remove = R[u[j-1]]['-'] + DP[i][j-1][0]
-
+                
+                '''
+                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1][0]
+                insert = R['-'][r[i-1]] + DP[i][j-1][0]
+                remove = R[u[j-1]]['-'] + DP[i-1][j][0]
+                '''
                 if (i == 8 and j == 7):
                     print(f'u: {u[j-1]}')
                     print(f'r: {r[i-1]}')
@@ -174,11 +207,13 @@ def min_difference_align(u: str, r: str,
         elif direction == 2: #INSERT
             res_u = '-' + res_u
             res_r = r[current[0]-1] + res_r
-            current[0] -= 1
+            #current[0] -= 1
+            current[1] -= 1
         elif direction == 3: #DELETE
             res_u = u[current[1]-1] + res_u
             res_r = '-' + res_r
-            current[1] -= 1
+            #current[1] -= 1
+            current[0] -= 1
 
 
     print(f'res_u: {res_u}')
@@ -251,7 +286,8 @@ class MinDifferenceTest(unittest.TestCase):
             a: {b: (0 if a == b else 1) for b in alphabet} for a in alphabet
         }
         # Warning: we may (read: 'will') use another matrix!
-        self.assertEqual(min_difference("d", "l", R), 1)
+        self.assertEqual(min_difference("benyam", "ephrem", R), 5)
+    '''
     '''
     def test_align_sanity(self):
         """
@@ -278,18 +314,19 @@ class MinDifferenceTest(unittest.TestCase):
         if r != 'exp-o-ne-ntial':
             self.logger.warning(f"'{r}' != 'exp-o-ne-ntial'")
     '''
+    
     def test_min_difference(self):
         R = qwerty_distance()
         for instance in data:
+            print(instance["u"])
+            print(instance["r"])
             difference = min_difference(
                 instance["u"],
                 instance["r"],
                 R
             )
-            print(instance["u"])
-            print(instance["r"])
             self.assertEqual(instance["expected"], difference)
-    '''
+    
     '''
     def test_min_difference_align(self):
         R = qwerty_distance()
