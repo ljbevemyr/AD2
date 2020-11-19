@@ -52,7 +52,7 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     #print('NEW')
     #u is x-axis and r is y-axix
     DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
-        
+
     for i in range(len(r)+1):
         #print(f'i: {i}')
         for j in range(len(u)+1):
@@ -62,7 +62,7 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
 
             elif i == 0:
                 DP[i][j] = R[u[j-1]]['-']
-            
+
             elif j == 0:
                 DP[i][j] = R['-'][r[i-1]]
             else:
@@ -105,7 +105,8 @@ def min_difference_align(u: str, r: str,
 
     print('NEW')
     #u is x-axis and r is y-axix
-    DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
+    # [Value, Direction] 1=Diagonal=Replace, 2=Up=Insert, 3=Left=Remove
+    DP = [ [ [None, None] for i in range(len(u)+1) ] for j in range(len(r)+1) ]
     res_u = ""
     res_r = ""
     for i in range(len(r)+1):
@@ -113,42 +114,47 @@ def min_difference_align(u: str, r: str,
         for j in range(len(u)+1):
             print(f'j: {j}')
             if i == 0 and j == 0:
-                DP[i][j] = R['-']['-']
+                DP[i][j][0] = R['-']['-']
 
             elif i == 0:
-                DP[i][j] = R[u[j-1]]['-']
+                DP[i][j][0] = R[u[j-1]]['-']
+                DP[i][j][1] = 3
 
             elif j == 0:
-                DP[i][j] = R['-'][r[i-1]]
+                DP[i][j][0] = R['-'][r[i-1]]
+                DP[i][j][1] = 2
             else:
                 fnutt = '-'
+
                 '''
-                print(f'u: {u[j-1]}')
-                print(f'r: {r[i-1]}')
-                print(f'Replace: {R[u[j-1]][r[i-1]] + DP[i-1][j-1]}')
-                print(f'Insert:  {R[fnutt][r[i-1]] + DP[i][j-1]}')
-                print(f'Remove:  {R[u[j-1]][fnutt] + DP[i-1][j]}')
-                print(DP[i-2][j-2])
+                --polyn-om-ial
+                exp-o-ne-ntial
+
                 '''
-                '''
-                DP[i][j] = min((R[u[j-1]][r[i-1]] + DP[i-1][j-1]),    #REPLACE
-                                (R['-'][r[i-1]] + DP[i-1][j]),        #INSERT (skip in r)
-                                (R[u[j-1]]['-'] + DP[i][j-1]))        #REMOVE (skip in u)                         
-                '''
-                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1]
-                insert = R['-'][r[i-1]] + DP[i][j-1]
-                remove = R[u[j-1]]['-'] + DP[i-1][j]
+                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1][0]
+                insert = R['-'][r[i-1]] + DP[i-1][j][0]
+                remove = R[u[j-1]]['-'] + DP[i][j-1][0]
+
+                if (i == 8 and j == 7):
+                    print(f'u: {u[j-1]}')
+                    print(f'r: {r[i-1]}')
+                    print(f'Replace: {replace}')
+                    print(f'Insert:  {insert}')
+                    print(f'Remove:  {remove}')
 
                 operations = [replace, insert, remove]
                 min_cost = min(operations)
+                min_operation = operations.index(min_cost)
 
-                DP[i][j] = min_cost
+                DP[i][j][0] = min_cost
+                DP[i][j][1] = min_operation+1
 
     current = [len(r), len(u)]
     for k in range(len(u)+len(r)+1):
         print(f"current: {current[0]}, {current[1]}")
         if current[0] == 0 and current[1] == 0:
             break
+        '''
         elif current[0] == 0:
             res_u = '-' + res_u
             res_r = r[current[0]-1] + res_r
@@ -157,27 +163,22 @@ def min_difference_align(u: str, r: str,
             res_u = u[current[1]-1] + res_u
             res_r = '-' + res_r
             current[0] -= 1
-        else:
-            diag = DP[current[0]-1][current[1]-1]
-            up = DP[current[0]-1][current[1]]
-            down = DP[current[0]][current[1]-1]
-            directions = [diag, up, down]
-            min_cost = min(directions)
-            min_direction = directions.index(min_cost)
-
-            if min_direction == 0: #REPLACE
-                res_u = u[current[1]-1] + res_u
-                res_r = r[current[0]-1] + res_r
-                current[0] -= 1
-                current[1] -= 1
-            elif min_direction == 1: #INSERT
-                res_u = '-' + res_u
-                res_r = r[current[0]-1] + res_r
-                current[0] -= 1
-            elif min_direction == 2: #DELETE
-                res_u = u[current[1]-1] + res_u
-                res_r = '-' + res_r
-                current[1] -= 1
+        '''
+        #Vi har antagligen blandat ihop up/down(left)
+        direction = DP[current[0]][current[1]][1]
+        if direction == 1: #REPLACE
+            res_u = u[current[1]-1] + res_u
+            res_r = r[current[0]-1] + res_r
+            current[0] -= 1
+            current[1] -= 1
+        elif direction == 2: #INSERT
+            res_u = '-' + res_u
+            res_r = r[current[0]-1] + res_r
+            current[0] -= 1
+        elif direction == 3: #DELETE
+            res_u = u[current[1]-1] + res_u
+            res_r = '-' + res_r
+            current[1] -= 1
 
 
     print(f'res_u: {res_u}')
@@ -185,7 +186,7 @@ def min_difference_align(u: str, r: str,
     for row in DP:
         print(row)
 
-    return (DP[len(r)][len(u)], res_u, res_r)
+    return (DP[len(r)][len(u)][0], res_u, res_r)
 
 # Sample matrix provided by us:
 def qwerty_distance() -> Dict[str, Dict[str, int]]:
@@ -260,6 +261,10 @@ class MinDifferenceTest(unittest.TestCase):
         """
         # QWERTY resemblance matrix:
         R = qwerty_distance()
+        #alphabet = ascii_lowercase + '-'
+        #R = {
+            #a: {b: (0 if a == b else 1) for b in alphabet} for a in alphabet
+        #}
         difference, u, r = min_difference_align(
             "polynomial",
             "exponential",
