@@ -145,6 +145,41 @@ def min_difference_align(u: str, r: str,
 
     return (DP[len(r)][len(u)][0], res_u, res_r)
 
+# Sample matrix provided by us:
+def qwerty_distance() -> Dict[str, Dict[str, int]]:
+    """
+    Generates a QWERTY Manhattan distance resemblance matrix
+    Costs for letter pairs are based on the Manhattan distance of the
+    corresponding keys on a standard QWERTY keyboard.
+    Costs for skipping a character depends on its placement on the keyboard:
+    adding a character has a higher cost for keys on the outer edges,
+    deleting a character has a higher cost for keys near the middle.
+    Usage:
+        R = qwerty_distance()
+        R['a']['b']  # result: 5
+    """
+    R = defaultdict(dict)
+    R['-']['-'] = 0
+    zones = ["dfghjk", "ertyuislcvbnm", "qwazxpo"]
+    keyboard = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+    for row, content in enumerate(zones):
+        for char in content:
+            R['-'][char] = row + 1
+            R[char]['-'] = 3 - row
+    for a, b in ((a, b) for b in ascii_lowercase for a in ascii_lowercase):
+        row_a, pos_a = next(
+            (row, content.index(a))
+            for row, content in enumerate(keyboard) if a in content
+        )
+        row_b, pos_b = next(
+            (row, content.index(b))
+            for row, content in enumerate(keyboard) if b in content
+        )
+        R[a][b] = int(
+            math.fabs(row_b - row_a) + math.fabs(pos_a - pos_b)
+        )
+    return R
+
 class MinDifferenceTest(unittest.TestCase):
     """
     Test Suite for search string replacement problem
@@ -222,5 +257,5 @@ class MinDifferenceTest(unittest.TestCase):
 
 if __name__ == '__main__':
 # Set logging config to show debug messages.
-logging.basicConfig(level=logging.DEBUG)
-unittest.main()
+    logging.basicConfig(level=logging.DEBUG)
+    unittest.main()
