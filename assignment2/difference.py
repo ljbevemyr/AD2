@@ -54,24 +54,28 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     # Inner loop variant: len(u)+1 - i
     # Outer loop variant: len(r)+1 - j
 
-    for i in range(len(r)+1):
+    # Set first cell to 0
+    DP[0][0] = R['-']['-'] #i.e. 0
+
+    # Set values of first row 
+    for col in range(1, len(u)+1):
+        DP[0][col] = R[u[col-1]]['-'] + DP[0][col-1]
+
+    # Set values of second row
+    for row in range(1, len(r)+1):
+        DP[row][0] = R['-'][r[row-1]] + DP[row-1][0]
+
+    # Set values of rest of matrix
+    for i in range(1, len(r)+1):
         # Variant: len(r)+1 - i
-        for j in range(len(u)+1):
+        for j in range(1, len(u)+1):
             # Variant: len(u)+1 - j
-            if i == 0 and j == 0:
-                DP[i][j] = R['-']['-']
-
-            elif i == 0:
-                DP[i][j] = R[u[j-1]]['-'] + DP[i][j-1]
-
-            elif j == 0:
-                DP[i][j] = R['-'][r[i-1]] + DP[i-1][j]
-                
-            else:
-                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1]
-                skip_in_u = R['-'][r[i-1]] + DP[i-1][j]
-                skip_in_r = R[u[j-1]]['-'] + DP[i][j-1]
-                DP[i][j] = min(replace, skip_in_u, skip_in_r)
+   
+            replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1]
+            skip_in_u = R['-'][r[i-1]] + DP[i-1][j]
+            skip_in_r = R[u[j-1]]['-'] + DP[i][j-1]
+            
+            DP[i][j] = min(replace, skip_in_u, skip_in_r)
 
     return DP[len(r)][len(u)]
 
@@ -94,36 +98,41 @@ def min_difference_align(u: str, r: str,
     DP = [ [ [None, None] for i in range(len(u)+1) ] for j in range(len(r)+1) ]
     # Inner loop variant: len(u)+1 - i
     # Outer loop variant: len(r)+1 - j
-    res_u = ""
-    res_r = ""
-    for i in range(len(r)+1):
+
+    # Set first cell to 0
+    DP[0][0][0] = R['-']['-'] #i.e. 0
+
+    # Set values of first row 
+    for col in range(1, len(u)+1):
+        DP[0][col][0] = R[u[col-1]]['-'] + DP[0][col-1][0]
+        DP[0][col][1] = 3
+
+    # Set values of second row
+    for row in range(1, len(r)+1):
+        DP[row][0][0] = R['-'][r[row-1]] + DP[row-1][0][0]
+        DP[row][0][1] = 2
+
+    # Set values of rest of matrix
+
+    for i in range(1, len(r)+1):
         # Variant: len(r)+1 - i
-        for j in range(len(u)+1):
+        for j in range(1, len(u)+1):
             # Variant: len(u)+1 - j
-            if i == 0 and j == 0:
-                DP[i][j][0] = R['-']['-']
 
-            elif i == 0:
-                DP[i][j][0] = R[u[j-1]]['-'] + DP[i][j-1][0]
-                DP[i][j][1] = 3
+            replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1][0]
+            skip_in_u = R['-'][r[i-1]] + DP[i-1][j][0]
+            skip_in_r = R[u[j-1]]['-'] + DP[i][j-1][0]
 
-            elif j == 0:
-                DP[i][j][0] = R['-'][r[i-1]] + DP[i-1][j][0]
-                DP[i][j][1] = 2
+            operations = [replace, skip_in_u, skip_in_r]
+            min_cost = min(operations)
+            min_operation = operations.index(min_cost)
 
-            else:
-                replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1][0]
-                skip_in_u = R['-'][r[i-1]] + DP[i-1][j][0]
-                skip_in_r = R[u[j-1]]['-'] + DP[i][j-1][0]
-
-                operations = [replace, skip_in_u, skip_in_r]
-                min_cost = min(operations)
-                min_operation = operations.index(min_cost)
-
-                DP[i][j][0] = min_cost
-                DP[i][j][1] = min_operation+1
+            DP[i][j][0] = min_cost
+            DP[i][j][1] = min_operation+1
 
     current = [len(r), len(u)]
+    res_u = ""
+    res_r = ""
     while current[0] != 0 or current[1] != 0:
         # Variant: current[0] + current[1]
         if current[0] == 0 and current[1] == 0:
@@ -145,3 +154,118 @@ def min_difference_align(u: str, r: str,
             current[1] -= 1
 
     return (DP[len(r)][len(u)][0], res_u, res_r)
+
+# Sample matrix provided by us:
+def qwerty_distance() -> Dict[str, Dict[str, int]]:
+     """
+     Generates a QWERTY Manhattan distance resemblance matrix
+     Costs for letter pairs are based on the Manhattan distance of the
+     corresponding keys on a standard QWERTY keyboard.
+     Costs for skipping a character depends on its placement on the keyboard:
+     adding a character has a higher cost for keys on the outer edges,
+     deleting a character has a higher cost for keys near the middle.
+     Usage:
+         R = qwerty_distance()
+         R['a']['b']  # result: 5
+     """
+     R = defaultdict(dict)
+     R['-']['-'] = 0
+     zones = ["dfghjk", "ertyuislcvbnm", "qwazxpo"]
+     keyboard = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+     for row, content in enumerate(zones):
+         for char in content:
+             R['-'][char] = row + 1
+             R[char]['-'] = 3 - row
+     for a, b in ((a, b) for b in ascii_lowercase for a in ascii_lowercase):
+         row_a, pos_a = next(
+             (row, content.index(a))
+             for row, content in enumerate(keyboard) if a in content
+         )
+         row_b, pos_b = next(
+             (row, content.index(b))
+             for row, content in enumerate(keyboard) if b in content
+         )
+         R[a][b] = int(
+             math.fabs(row_b - row_a) + math.fabs(pos_a - pos_b)
+         )
+     return R
+
+class MinDifferenceTest(unittest.TestCase):
+     """
+     Test Suite for search string replacement problem
+     Any method named "test_something" will be run when this file is
+     executed. Use the sanity check as a template for adding your own test
+     cases if you wish.
+     (You may delete this class from your submitted solution.)
+     """
+
+     logger = logging.getLogger('MinDifferenceTest')
+     def test_diff_sanity(self):
+         """
+         Difference sanity test
+         Given a simple resemblance matrix, test that the reported
+         difference is the expected minimum. Do NOT assume we will always
+         use this resemblance matrix when testing!
+         """
+         alphabet = ascii_lowercase + '-'
+         # The simplest (reasonable) resemblance matrix:
+         R = {
+             a: {b: (0 if a == b else 1) for b in alphabet} for a in alphabet
+         }
+         # Warning: we may (read: 'will') use another matrix!
+         self.assertEqual(min_difference("benyam", "ephrem", R), 5)
+
+     def test_align_sanity(self):
+         """
+         Simple alignment
+         Passes if the returned alignment matches the expected one.
+         """
+         # QWERTY resemblance matrix:
+         R = qwerty_distance()
+         #alphabet = ascii_lowercase + '-'
+         #R = {
+             #a: {b: (0 if a == b else 1) for b in alphabet} for a in alphabet
+         #}
+         difference, u, r = min_difference_align(
+             "polynomial",
+             "exponential",
+             R
+         )
+         # Warning: we may (read: 'will') use another matrix!
+         self.assertEqual(difference, 15)
+         # Warning: there may be other optimal matchings!
+         if u != '--polyn-om-ial':
+             self.logger.warning(f"'{u}' != '--polyn-om-ial'")
+         if r != 'exp-o-ne-ntial':
+             self.logger.warning(f"'{r}' != 'exp-o-ne-ntial'")
+
+     def test_min_difference(self):
+         R = qwerty_distance()
+         for instance in data:
+             difference = min_difference(
+                 instance["u"],
+                 instance["r"],
+                 R
+             )
+             self.assertEqual(instance["expected"], difference)
+
+     def test_min_difference_align(self):
+         R = qwerty_distance()
+         for instance in data:
+             difference, u, r = min_difference_align(
+                 instance["u"],
+                 instance["r"],
+                 R
+             )
+             self.assertEqual(instance["expected"], difference)
+             self.assertEqual(len(u), len(r))
+             u_diff, _, _ = min_difference_align(u, instance["u"], R)
+             self.assertEqual(u_diff, 0)
+             r_diff, _, _ = min_difference_align(r, instance["r"], R)
+             self.assertEqual(r_diff, 0)
+
+
+if __name__ == '__main__':
+ # Set logging config to show debug messages.
+     logging.basicConfig(level=logging.DEBUG)
+     unittest.main() 
