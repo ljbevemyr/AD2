@@ -49,7 +49,7 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
     """
     # To get the resemblance between two letters, use code like this:
     # difference = R['a']['b']
-    #u is x-axis and r is y-axix
+    # u is x-axis and r is y-axix
     DP = [ [ None for i in range(len(u)+1) ] for j in range(len(r)+1) ]
     # Inner loop variant: len(u)+1 - i
     # Outer loop variant: len(r)+1 - j
@@ -66,11 +66,12 @@ def min_difference(u: str, r: str, R: Dict[str, Dict[str, int]]) -> int:
 
             elif j == 0:
                 DP[i][j] = R['-'][r[i-1]] + DP[i-1][j]
+                
             else:
                 replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1]
-                insert = R['-'][r[i-1]] + DP[i-1][j]
-                remove = R[u[j-1]]['-'] + DP[i][j-1]
-                DP[i][j] = min(replace, insert, remove)
+                skip_in_u = R['-'][r[i-1]] + DP[i-1][j]
+                skip_in_r = R[u[j-1]]['-'] + DP[i][j-1]
+                DP[i][j] = min(replace, skip_in_u, skip_in_r)
 
     return DP[len(r)][len(u)]
 
@@ -88,8 +89,8 @@ def min_difference_align(u: str, r: str,
                                     3, "dinam-ck", "dynamic-"
     """
 
-    #u is x-axis and r is y-axix
-    # [Value, Direction] 1=Diagonal=Replace, 2=Up=Insert, 3=Left=Remove
+    # u is x-axis and r is y-axix
+    # [Value, Direction] 1=Diagonal=Replace, 2=Up=Skip in u, 3=Left=Skip in r
     DP = [ [ [None, None] for i in range(len(u)+1) ] for j in range(len(r)+1) ]
     # Inner loop variant: len(u)+1 - i
     # Outer loop variant: len(r)+1 - j
@@ -112,10 +113,10 @@ def min_difference_align(u: str, r: str,
 
             else:
                 replace = R[u[j-1]][r[i-1]] + DP[i-1][j-1][0]
-                insert = R['-'][r[i-1]] + DP[i-1][j][0]
-                remove = R[u[j-1]]['-'] + DP[i][j-1][0]
+                skip_in_u = R['-'][r[i-1]] + DP[i-1][j][0]
+                skip_in_r = R[u[j-1]]['-'] + DP[i][j-1][0]
 
-                operations = [replace, insert, remove]
+                operations = [replace, skip_in_u, skip_in_r]
                 min_cost = min(operations)
                 min_operation = operations.index(min_cost)
 
@@ -123,8 +124,8 @@ def min_difference_align(u: str, r: str,
                 DP[i][j][1] = min_operation+1
 
     current = [len(r), len(u)]
-    for k in range(len(u)+len(r)+1):
-        # Variant: len(u)+len(r)+1 - k
+    while current[0] != 0 or current[1] != 0:
+        # Variant: current[0] + current[1]
         if current[0] == 0 and current[1] == 0:
             break
 
@@ -134,11 +135,11 @@ def min_difference_align(u: str, r: str,
             res_r = r[current[0]-1] + res_r
             current[0] -= 1
             current[1] -= 1
-        elif direction == 2: #INSERT
+        elif direction == 2: #SKIP IN u
             res_u = '-' + res_u
             res_r = r[current[0]-1] + res_r
             current[0] -= 1
-        elif direction == 3: #DELETE
+        elif direction == 3: #SKIP IN r
             res_u = u[current[1]-1] + res_u
             res_r = '-' + res_r
             current[1] -= 1
