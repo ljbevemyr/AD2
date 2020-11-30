@@ -20,15 +20,12 @@ all copies and extensions of this file, and those are not allowed to
 appear publicly on the internet, both during a course instance and
 forever after.
 '''
-from src.sensitive_data import data  # noqa
-from typing import Tuple  # noqa
-from src.graph import Graph  # noqa
+from typing import *  # noqa
 import unittest  # noqa
-
-# If your solution needs a queue (like the BFS algorithm),
-# then you can use this one:
+from src.sensitive_data import data  # noqa
+from src.graph import Graph  # noqa
+# If your solution needs a queue, then you can use this one:
 from collections import deque  # noqa
-
 # If you need to log information during tests, execution, or both,
 # then you can use this library:
 # Basic example:
@@ -77,9 +74,9 @@ class SensitiveTest(unittest.TestCase):
         g2.add_edge('a', 'c', capacity=100, flow=4)
         g2.add_edge('b', 'c', capacity=100, flow=1)
         g2.add_edge('c', 'd', capacity=5, flow=5)
-        self.assertIn(
+        self.assertEqual(
             sensitive(g2, 'a', 'd'),
-            set([('a', 'c'), ('c', 'd')])
+            ('c', 'd')
         )
 
     def test_sensitive(self):

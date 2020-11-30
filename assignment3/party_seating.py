@@ -20,13 +20,11 @@ all copies and extensions of this file, and those are not allowed to
 appear publicly on the internet, both during a course instance and
 forever after.
 '''
-from src.party_seating_data import data  # noqa
-from typing import List, Tuple  # noqa
+from typing import *  # noqa
 import unittest  # noqa
-
+from src.party_seating_data import data  # noqa
 # If your solution needs a queue, then you can use this one:
 from collections import deque  # noqa
-
 # If you need to log information during tests, execution, or both,
 # then you can use this library:
 # Basic example:
