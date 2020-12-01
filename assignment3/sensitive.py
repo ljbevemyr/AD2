@@ -22,6 +22,7 @@ forever after.
 '''
 from typing import *  # noqa
 import unittest  # noqa
+import math  # noqa
 from src.sensitive_data import data  # noqa
 from src.graph import Graph  # noqa
 # If your solution needs a queue, then you can use this one:
@@ -65,9 +66,9 @@ class SensitiveTest(unittest.TestCase):
         g1.add_edge('d', 'f', capacity=20, flow=19)
         g1.add_edge('e', 'd', capacity=7, flow=7)
         g1.add_edge('e', 'f', capacity=4, flow=4)
-        self.assertEqual(
+        self.assertIn(
             sensitive(g1, 'a', 'f'),
-            ('b', 'd')
+            [('b', 'd'), ('e', 'd'), ('e', 'f')]
         )
         g2 = Graph(is_directed=True)
         g2.add_edge('a', 'b', capacity=1, flow=1)

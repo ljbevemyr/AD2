@@ -22,6 +22,7 @@ forever after.
 '''
 from typing import *  # noqa
 import unittest  # noqa
+import math  # noqa
 from src.party_seating_data import data  # noqa
 # If your solution needs a queue, then you can use this one:
 from collections import deque  # noqa
