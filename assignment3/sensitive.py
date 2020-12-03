@@ -37,7 +37,7 @@ import logging  # noqa
 
 __all__ = ['sensitive']
 
-def dfs(G: Graph, node: str, last: str, nodes: Set[str]):
+def dfs(G: Graph, node: str, last: str, nodes: Set[str], sens):
     """
     Sig:  T: Graph, node: str, nodes: Set[str] ->
     Pre:  node must exist in T and nodes must be empty.
@@ -48,17 +48,20 @@ def dfs(G: Graph, node: str, last: str, nodes: Set[str]):
           dfs(T, node, nodes)
           nodes is now {a,b,c,d}
     """
-    if (node == last):
-        return (None, None)
+
     nodes.add(node)
+    
     for neighbour in G.neighbors(node):
+        print(f'node: {node}')
+        print(f'neighbour: {neighbour}')
         # Variant: len(T.neighbors(node)) - T.neighbors.index(neighbour)
 
         if neighbour not in nodes:
             if (G.flow(node, neighbour) == G.capacity(node, neighbour)):
-                return (node, neighbour)
+                print((node, neighbour))
+                sens.add((node, neighbour))
             else:
-                dfs(G, neighbour, last, nodes)
+                dfs(G, neighbour, last, nodes, sens)
                 # Variant: len(T.nodes) - len(nodes)
 
 def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
@@ -69,7 +72,10 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     Ex:   sensitive(g1, 'a', 'f') = ('b', 'd')
     """
     nodes  = set()
-    return dfs(G, s, t, nodes)
+    sens = set()
+    dfs(G, s, t, nodes, sens)
+    print(f'sens: {sens}')
+    return sens.pop()
 
 class SensitiveTest(unittest.TestCase):
     """
@@ -103,9 +109,11 @@ class SensitiveTest(unittest.TestCase):
             ('c', 'd')
         )
 
-        '''
+    
     def test_sensitive(self):
-        for instance in data:
+        for i, instance in enumerate(data):
+            print(f'INSTANCE: {instance}')
+            print(i)
             graph = instance['digraph'].copy()
             u, v = sensitive(graph, instance["source"], instance["sink"])
             self.assertIn(u, graph, f"Invalid edge ({u}, {v})")
@@ -114,7 +122,7 @@ class SensitiveTest(unittest.TestCase):
                 (u, v),
                 instance["sensitive_edges"]
             )
-'''
+
 
 if __name__ == "__main__":
     # Set logging config to show debug messages.
