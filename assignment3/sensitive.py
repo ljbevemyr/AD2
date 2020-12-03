@@ -37,7 +37,7 @@ import logging  # noqa
 
 __all__ = ['sensitive']
 
-def dfs2(G: Graph, node: str, last: str, reachable, visited):
+def dfs2(G: Graph, node: str, last: str, reachable):
     """
     Sig:  T: Graph, node: str, nodes: Set[str] ->
     Pre:  node must exist in T and nodes must be empty.
@@ -52,14 +52,13 @@ def dfs2(G: Graph, node: str, last: str, reachable, visited):
     if node == last:
         return True
 
-    visited.add(node)
     for neighbour in G.neighbors(node):
         print(f'node: {node}')
         print(f'neigh: {neighbour}')
 
         # Variant: len(T.neighbors(node)) - T.neighbors.index(neighbour)
-        if neighbour not in  visited and neighbour not in reachable:
-            if dfs2(G, neighbour, last, reachable, visited):
+        if neighbour not in reachable:
+            if dfs2(G, neighbour, last, reachable):
                 return True
 
     return False 
@@ -102,15 +101,14 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     Post:
     Ex:   sensitive(g1, 'a', 'f') = ('b', 'd')
     """
-    reachable  = set()
+    nodes  = set()
     potential_sens = set()
     #reachable = set()
-    dfs1(G, s, t, reachable, potential_sens)
+    dfs1(G, s, t, nodes, potential_sens)
 
     sens = set()
-    visited = set()
     for edge in potential_sens:
-        if dfs2(G, edge[1], t, reachable, visited):
+        if dfs2(G, edge[1], t, nodes):
             sens.add(edge)
     # Ta fram alla non-reachable
 
