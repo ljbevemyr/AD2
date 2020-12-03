@@ -37,7 +37,33 @@ import logging  # noqa
 
 __all__ = ['sensitive']
 
-def dfs(G: Graph, node: str, last: str, nodes: Set[str], sens):
+def dfs2(G: Graph, node: str, last: str, reachable):
+    """
+    Sig:  T: Graph, node: str, nodes: Set[str] ->
+    Pre:  node must exist in T and nodes must be empty.
+    Post: nodes contains all visited nodes
+    Ex:   T = <V=(a,b,c,d,e), E=((a, b),(b, c),(c, d))>
+          node = 'a'
+          nodes = {}
+          dfs(T, node, nodes)
+          nodes is now {a,b,c,d}
+    """
+
+    if node == last:
+        return True
+
+    for neighbour in G.neighbors(node):
+        # Variant: len(T.neighbors(node)) - T.neighbors.index(neighbour)
+        if neighbour not in reachable:
+            if dfs2(G, neighbour, last, reachable):
+                return True
+
+    return False 
+                
+
+                  
+
+def dfs1(G: Graph, node: str, last: str, nodes: Set[str], sens):
     """
     Sig:  T: Graph, node: str, nodes: Set[str] ->
     Pre:  node must exist in T and nodes must be empty.
@@ -61,8 +87,9 @@ def dfs(G: Graph, node: str, last: str, nodes: Set[str], sens):
                 print((node, neighbour))
                 sens.add((node, neighbour))
             else:
-                dfs(G, neighbour, last, nodes, sens)
+                dfs1(G, neighbour, last, nodes, sens)
                 # Variant: len(T.nodes) - len(nodes)
+
 
 def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     """
@@ -72,8 +99,17 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     Ex:   sensitive(g1, 'a', 'f') = ('b', 'd')
     """
     nodes  = set()
+    potential_sens = set()
+    #reachable = set()
+    dfs1(G, s, t, nodes, potential_sens)
+
     sens = set()
-    dfs(G, s, t, nodes, sens)
+    for edge in potential_sens:
+        if dfs2(G, edge[1], t, nodes):
+            sens.add(edge)
+    # Ta fram alla non-reachable
+
+    # Ny dfs
     print(f'sens: {sens}')
     return sens.pop()
 
@@ -122,7 +158,7 @@ class SensitiveTest(unittest.TestCase):
                 (u, v),
                 instance["sensitive_edges"]
             )
-
+    
 
 if __name__ == "__main__":
     # Set logging config to show debug messages.
