@@ -22,16 +22,7 @@ forever after.
 '''
 from typing import *  # noqa
 import unittest  # noqa
-import math  # noqa
 from src.party_seating_data import data  # noqa
-# If your solution needs a queue, then you can use this one:
-from collections import deque  # noqa
-# If you need to log information during tests, execution, or both,
-# then you can use this library:
-# Basic example:
-#   logger = logging.getLogger('put name here')
-#   a = 5
-#   logger.debug(f"a = {a}")
 import logging  # noqa
 
 __all__ = ['party']
@@ -47,15 +38,16 @@ def party(known: List[List[int]]) -> Tuple[bool, List[int], List[int]]:
     if (len(known) == 0):
         return False, [], []
 
-
     table1 = set()
     table2 = set()
     stack = set()
     notHandledPersons = set()
     for i in range(len(known)):
+        # Variant: len(known)-i
         notHandledPersons.add(i)
 
     for i in range(len(known)):
+        # Variant: len(known)-i
         table1Free = True
         table2Free = True
         if (len(stack) == 0):
@@ -63,6 +55,7 @@ def party(known: List[List[int]]) -> Tuple[bool, List[int], List[int]]:
         person = stack.pop()
         friends = known[person]
         for friend in friends:
+            # Variant: len(friends)-friends.index(friends)
             if friend in table1:
                 table1Free = False
             elif friend in table2:
@@ -79,63 +72,3 @@ def party(known: List[List[int]]) -> Tuple[bool, List[int], List[int]]:
             return False, [], []
 
     return True, table1, table2
-
-
-class PartySeatingTest(unittest.TestCase):
-    """
-    Test suite for party seating problem
-    """
-    logger = logging.getLogger('PartySeatingTest')
-
-    def known_test(self, known, A, B):
-        self.assertEqual(
-            len(A) + len(B),
-            len(known),
-            "wrong number of guests: "
-            f"{len(known)} guests, "
-            f"tables hold {len(A)} and {len(B)}"
-        )
-        for g in range(len(known)):
-            self.assertTrue(
-                g in A or g in B,
-                f"Guest {g} not seated anywhere"
-            )
-        for a1, a2 in ((a1, a2) for a2 in A for a1 in A):
-            self.assertNotIn(
-                a2,
-                known[a1],
-                f"Guests {a1} and {a2} seated together, and know each other"
-            )
-        for b1, b2 in ((b1, b2) for b2 in B for b1 in B):
-            self.assertNotIn(
-                b2,
-                known[b1],
-                f"Guests {b1} and {b2} seated together, and know each other"
-            )
-    '''
-    def test_sanity(self):
-        """
-        Sanity test
-
-        A minimal test case.
-        """
-        known = [[1, 2], [0], [0]]
-        _, A, B = party(known)
-        self.known_test(known, A, B)
-    '''
-    def test_party(self):
-        for instance in data:
-            known = instance["known"]
-            expected = instance["expected"]
-            success, A, B = party(known)
-
-            if not expected:
-                self.assertFalse(success)
-                continue
-            self.known_test(known, A, B)
-
-
-if __name__ == '__main__':
-    # Set logging config to show debug messages.
-    logging.basicConfig(level=logging.DEBUG)
-    unittest.main()
