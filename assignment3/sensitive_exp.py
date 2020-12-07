@@ -37,7 +37,7 @@ import logging  # noqa
 
 __all__ = ['sensitive']
 
-def dfs2(G: Graph, node: str, last: str, reachable):
+def dfs(GRes: Graph, node: str, reachable: Set[str]):
     """
     Sig:  T: Graph, node: str, nodes: Set[str] ->
     Pre:  node must exist in T and nodes must be empty.
@@ -48,51 +48,12 @@ def dfs2(G: Graph, node: str, last: str, reachable):
           dfs(T, node, nodes)
           nodes is now {a,b,c,d}
     """
-
-    if node == last:
-        return True
-
-    for neighbour in G.neighbors(node):
-        print(f'node: {node}')
-        print(f'neigh: {neighbour}')
-
+    reachable.add(node)
+    for neighbour in GRes.neighbors(node):
         # Variant: len(T.neighbors(node)) - T.neighbors.index(neighbour)
         if neighbour not in reachable:
-            if dfs2(G, neighbour, last, reachable):
-                return True
-
-    return False 
-                
-
-                  
-
-def dfs1(G: Graph, node: str, last: str, nodes: Set[str], sens):
-    """
-    Sig:  T: Graph, node: str, nodes: Set[str] ->
-    Pre:  node must exist in T and nodes must be empty.
-    Post: nodes contains all visited nodes
-    Ex:   T = <V=(a,b,c,d,e), E=((a, b),(b, c),(c, d))>
-          node = 'a'
-          nodes = {}
-          dfs(T, node, nodes)
-          nodes is now {a,b,c,d}
-    """
-
-    nodes.add(node)
-    
-    for neighbour in G.neighbors(node):
-        print(f'node: {node}')
-        print(f'neighbour: {neighbour}')
-        # Variant: len(T.neighbors(node)) - T.neighbors.index(neighbour)
-
-        if neighbour not in nodes:
-            if (G.flow(node, neighbour) == G.capacity(node, neighbour)):
-                print((node, neighbour))
-                sens.add((node, neighbour))
-            else:
-                dfs1(G, neighbour, last, nodes, sens)
-                # Variant: len(T.nodes) - len(nodes)
-
+            dfs(GRes, neighbour, reachable)
+            # Variant: len(T.nodes) - len(nodes)
 
 def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     """
@@ -101,21 +62,32 @@ def sensitive(G: Graph, s: str, t: str) -> Tuple[str, str]:
     Post:
     Ex:   sensitive(g1, 'a', 'f') = ('b', 'd')
     """
-    nodes  = set()
-    potential_sens = set()
-    #reachable = set()
-    dfs1(G, s, t, nodes, potential_sens)
+    
+    # Create residual graph
+    GRes = Graph(is_directed=True)
+    for (u, v) in G.edges:
+        residual = G.capacity(u, v) - G.flow(u, v)
 
-    sens = set()
-    for edge in potential_sens:
-        if dfs2(G, edge[1], t, nodes):
-            sens.add(edge)
-    # Ta fram alla non-reachable
+        if residual == 0: # Have used up all the capacity already
+            GRes.add_edge(v, u, capacity=G.capacity(u, v))
+        elif residual == G.capacity(u, v): # Have used none of the capacity yet
+            GRes.add_edge(u, v, capacity=G.capacity(u, v))
+        else:
+            GRes.add_edge(u, v, capacity=residual)
+            GRes.add_edge(v, u, capacity=G.flow(u, v))
 
-    # Ny dfs
-    print(f'sens: {sens}')
-    return sens.pop()
+    # Run DFS from the source to find which are reachable in the residual graph
+    reachable = set()
+    dfs(GRes, s, reachable)
 
+    # Check for edges that go from a reachable edge to a non-reachable edge
+    for (u, v) in G.edges:
+        if u in reachable and v not in reachable:
+            return (u, v)
+    
+    # If for some reason no such edge would exist
+    return (None, None) 
+    
 class SensitiveTest(unittest.TestCase):
     """
     Test suite for the sensitive edge problem
@@ -124,6 +96,7 @@ class SensitiveTest(unittest.TestCase):
 
     def test_sanity(self):
         """Sanity check"""
+        
         g1 = Graph(is_directed=True)
         g1.add_edge('a', 'b', capacity=16, flow=12)
         g1.add_edge('a', 'c', capacity=13, flow=11)
@@ -138,6 +111,7 @@ class SensitiveTest(unittest.TestCase):
             sensitive(g1, 'a', 'f'),
             [('b', 'd'), ('e', 'd'), ('e', 'f')]
         )
+    
         g2 = Graph(is_directed=True)
         g2.add_edge('a', 'b', capacity=1, flow=1)
         g2.add_edge('a', 'c', capacity=100, flow=4)
@@ -147,12 +121,9 @@ class SensitiveTest(unittest.TestCase):
             sensitive(g2, 'a', 'd'),
             ('c', 'd')
         )
-
     
     def test_sensitive(self):
-        for i, instance in enumerate(data):
-            print(f'INSTANCE: {instance}')
-            print(i)
+        for instance in data:
             graph = instance['digraph'].copy()
             u, v = sensitive(graph, instance["source"], instance["sink"])
             self.assertIn(u, graph, f"Invalid edge ({u}, {v})")

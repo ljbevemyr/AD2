@@ -101,6 +101,7 @@ data[4]["digraph"].add_edge("e", "d", capacity=18, flow=18)
 data[4]["source"] = "a"
 data[4]["sink"] = "h"
 data[4]["sensitive_edges"] = [('a', 'd'), ('a', 'h'), ('b', 'f'), ('b', 'h'), ('g', 'e'), ('f', 'h'), ('e', 'd')]
+
 # Directed graph consisting of 9 nodes
 data[5]["digraph"] = Graph(is_directed=True)
 data[5]["digraph"].add_edge("a", "d", capacity=41, flow=41)
